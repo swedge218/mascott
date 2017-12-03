@@ -9,6 +9,8 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
+use yii\web\Response;
+
 use app\models\Product;
 use app\models\ProductType;
 use app\models\Batch;
@@ -22,6 +24,7 @@ use app\controllers\services\ProductService;
 use app\controllers\services\LocationService;
 use app\models\utils\Uploader;
 use app\models\service\ProductExcelParser;
+use app\models\service\BatchExcelParser;
 
 
 /**
@@ -112,6 +115,7 @@ class ProductController extends BaseController
         $this->checkPermission(['view_edit_form_a']); 
         
         $model = new Product();
+        $uploaderModel = new Uploader(['scenario' => Uploader::SCENARIO_EXCEL]);
         $hcrService = new HCRService();
         $countryService = new CountryService();
         $providerService = new ProviderService();
@@ -132,6 +136,7 @@ class ProductController extends BaseController
                 
         return $this->render('create', [
             'model' => $model,
+            'uploaderModel' => $uploaderModel,
             'hcrMap' => $hcrMap,
             'countryMap' => $countryMap,
             'providerMap' => $providerMap,
@@ -150,6 +155,7 @@ class ProductController extends BaseController
         $this->checkPermission(['view_edit_form_a']); 
         
         $model = $this->findModel($id);
+        $uploaderModel = new Uploader(['scenario' => Uploader::SCENARIO_EXCEL]);
         
         $roleTitle = Yii::$app->session['user_role_title'];
         $providerId = Yii::$app->session['user_provider_id'];
@@ -182,6 +188,7 @@ class ProductController extends BaseController
         
         return $this->render('update', [
             'model' => $model,
+            'uploaderModel' => $uploaderModel,
             'hcrMap' => $hcrMap,
             'countryMap' => $countryMap,
             'providerMap' => $providerMap,
@@ -376,9 +383,28 @@ class ProductController extends BaseController
     }
     
     
+    public function actionDownloadBatchesSample(){
+        $file = 'uploads/templates/MAS Batch Registration Form - Form C.xlsx';
+
+        if (file_exists($file)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="'.basename($file).'"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file));
+            readfile($file);
+            exit;
+        } else {
+            echo 'no file'; 
+        }
+    }
+    
     public function actionImportProductData(){
         $model = new Uploader(['scenario' => Uploader::SCENARIO_EXCEL]);
-        $startRow = 19;
+        $startRow = 19; $providerRow = 13;
+        
         $uploadErrors = array(); $parseResponse = array(); 
         
         if (Yii::$app->request->isPost) {
@@ -397,7 +423,7 @@ class ProductController extends BaseController
                 * Will contain errors if any
                 * Will be empty of no errors.
                 */
-                $parseResponse = (new ProductExcelParser($startRow, $fileName))->run();
+                $parseResponse = (new ProductExcelParser($startRow, $providerRow, $fileName))->run();
                 
                 //Yii::$app->session->setFlash('uploaded', 'UPLOADED');
                 
@@ -409,6 +435,46 @@ class ProductController extends BaseController
 
         return $this->render('import-product-data', [
             'model' => $model,
+            'uploadErrors' => $uploadErrors,
+            'excelErrors' => $parseResponse
+        ]);
+        
+    }
+    
+    
+    public function actionImportBatchData($productId){
+        $model = new Uploader(['scenario' => Uploader::SCENARIO_EXCEL]);
+        $productModel = Product::findOne($productId);
+        $startRow = 20; $productRow = 14; $nrnRow = 15;
+        $uploadErrors = array(); $parseResponse = array(); 
+        
+        if (Yii::$app->request->isPost) {            
+            $model->excelFile = UploadedFile::getInstance($model, 'excelFile');
+            if ($model->uploadExcelFile()) {
+                /**
+                 * HURRAY!
+                 * file is uploaded successfully
+                 */
+                
+                $fileName = $model->excelFile->baseName . '.' . $model->excelFile->extension;
+                $fileName = 'uploads' . DIRECTORY_SEPARATOR . $fileName;
+                
+                /**
+                * $parseResponse is an array.
+                * Will contain errors if any
+                * Will be empty of no errors.
+                */
+                $parseResponse = (new BatchExcelParser($startRow, $productRow, $nrnRow, $fileName))->run();
+                
+            } else {
+                $uploadErrors[] = $model->getErrors();
+            }
+            
+        }
+
+        return $this->render('import-batch-data', [
+            'model' => $model,
+            'productModel' => $productModel,
             'uploadErrors' => $uploadErrors,
             'excelErrors' => $parseResponse
         ]);

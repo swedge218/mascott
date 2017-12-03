@@ -46,15 +46,17 @@ use app\models\Provider;
 class ProductExcelParser {
     //put your code here
     private $_startRow = 19;
+    private $_providerRow = 0;
     private $_fileName = '';
     private $_rowNumber = 0;
     private $_errors = array();
     private $_rowCoreValues = array();
     
-    public function __construct($startRow, $fileName) {
+    public function __construct($startRow, $providerRow, $fileName) {
         $this->_startRow = $startRow;
         $this->_fileName = $fileName;
         $this->_rowNumber = $startRow-1;
+        $this->_providerRow = $providerRow;
     }
     
     private function fetchFile($fileName){
@@ -73,6 +75,14 @@ class ProductExcelParser {
         ini_set('memory_limit', '2048M');
         
         $fileData = $this->fetchFile($this->_fileName);
+        
+        $provider = '';
+        $providerName = $fileData[$this->_providerRow]['C'];
+        $providerValidationResult = $this->validateProvider($providerName);
+        if(!empty($providerValidationResult))
+            $this->_errors[$this->_providerRow] = [$providerValidationResult];
+        else 
+            $provider = Provider::find()->where(['UPPER(provider_name)' => strtoupper($providerName)])->one();
         
         if(!empty($fileData)){
             //chop off the non-content rows 
@@ -98,11 +108,12 @@ class ProductExcelParser {
             //echo 'start creating rows';exit;
             
             //file parsed without errors
+            $this->_rowNumber = $this->_startRow - 1;
             if(empty($this->_errors)) {
-                ///reset($fileData);
+                $this->_rowNumber++;
                 foreach($fileData as $row){
                     //if(empty($row['A'])) continue;
-                    $createResult = $this->createProduct($row);
+                    $createResult = $this->createProduct($row, $provider->id);
                     if($createResult !== true){
                         $this->_errors[$this->_rowNumber] = $createResult;
                     }
@@ -116,7 +127,7 @@ class ProductExcelParser {
             
     }
     
-    private function createProduct($row){     
+    private function createProduct($row, $providerId){     
         $model = new Product(); 
         //$model = new Product(); 
         $row = array_values($row);
@@ -159,16 +170,10 @@ class ProductExcelParser {
               case 8;
                 $model->nrn = strtoupper($values[8]);
                 break;
-              case 9:
-                $model->provider_id = Provider::findOne(['UPPER(provider_name)' => strtoupper($values[9])])->id; //provider
-              case 10;
-                  $model->mas_code_assigned = strtoupper($values['10']) == 'YES' ? 2 : 1;
-                  break;
-              case 11:
-                  $model->mas_code_status = strtoupper($values['11']) == 'ACTIVATED' ? 2 : 1;
-                  break;
           }
         }
+        
+        $model->provider_id = $providerId;
         
         //var_dump($model->attributes); exit;
         
@@ -197,7 +202,13 @@ class ProductExcelParser {
     private function hasRequiredFields($row){
         $errors = array();
         
-        if(empty($row['B'])) $errors[] = 'Product name cannot be blank'; else $this->_rowCoreValues['product_name'] = $row['B'];     //product name
+        if(empty($row['B'])) $errors[] = 'Product name cannot be blank'; 
+        $product = Product::find()->where(['UPPER(product_name)' => strtoupper($row['B'])])->one();
+        if($product !== null){
+            $errors[] = 'Product <strong>' . $row['B'] . '</strong> already exists'; 
+        } else {
+            $this->_rowCoreValues['product_name'] = $row['B'];     //product name
+        }
         
         if(empty($row['C'])) $errors[] = 'Product type cannot be blank'; 
         $productType = ProductType::find()->where(['UPPER(title)' => strtoupper($row['C'])])->one();
@@ -239,28 +250,31 @@ class ProductExcelParser {
             $this->_rowCoreValues['nrn'] = $row['I'];
         }
         
-        if(empty($row['J'])) $errors[] = 'Provider cannot be blank'; 
-        $provider = Provider::find()->where(['UPPER(provider_name)' => strtoupper($row['J'])])->one();
-        if($provider == null) {
-            $errors[] = 'Provider <strong>' . $row['J'] . '</strong> does not exist'; 
-        } else {
-            $this->_rowCoreValues['provider_name'] = $provider->provider_name;
-            $row['J'] = $provider->provider_name;
-        }
-        
-        if(empty($row['O'])) 
-            $errors[] = 'MAS Code Assigned cannot be blank'; 
-        else 
-            $this->_rowCoreValues['mas_code_assigned'] = strtoupper($row['O']) == 'YES' ? 2 : 1;
-        
-        
-        if(empty($row['P'])) 
-            $errors[] = 'MAS Code Status cannot be blank'; 
-        else 
-            $this->_rowCoreValues['mas_code_status'] = strtoupper($row['P']) == 'ACTIVATED' ? 2 : 1;
+//        if(empty($row['O'])) 
+//            $errors[] = 'MAS Code Assigned cannot be blank'; 
+//        else 
+//            $this->_rowCoreValues['mas_code_assigned'] = strtoupper($row['O']) == 'YES' ? 2 : 1;        
+//        
+//        if(empty($row['P'])) 
+//            $errors[] = 'MAS Code Status cannot be blank'; 
+//        else 
+//            $this->_rowCoreValues['mas_code_status'] = strtoupper($row['P']) == 'ACTIVATED' ? 2 : 1;
         
         return $errors;
         
     }
 
+    function validateProvider($providerName){
+        $errors = [];
+        if(empty($providerName)) 
+            return $errors[] = 'Provider cannot be blank'; 
+        else {
+            $provider = Provider::find()->where(['UPPER(provider_name)' => strtoupper($providerName)])->one();
+            if($provider == null) {
+                return $errors[] = 'Provider <strong>' . $providerName . '</strong> does not exist'; 
+            }
+        } 
+        
+        return '';
+    }
 }

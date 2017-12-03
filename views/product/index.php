@@ -17,6 +17,7 @@ $permissions = Yii::$app->session['user_permissions'];
     <h1><?= $this->title; ?></h1>
 </section>
 
+
 <div class="row marginbottom15">
         <?php if(in_array('view_edit_form_a', $permissions)) { ?>
             <div class="col-md-12">

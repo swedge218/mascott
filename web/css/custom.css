@@ -570,6 +570,7 @@ legend {
 .loading-modal .gif-wrapper, .loading-gif-wrapper {
     background: #ffffff;
     padding: 20px;
+    padding-bottom: 0;
 }
 
 .sidebar-menu {

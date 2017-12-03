@@ -19,8 +19,6 @@ use app\models\reports\ProductReport;
  * @property string $nrn
  * @property string $manufacturing_date
  * @property string $expiry_date
- * @property integer $mas_code_assigned
- * @property integer $mas_code_status
  * @property string $batch_number
  * @property integer $provider_id
  * @property integer $deleted
@@ -55,9 +53,9 @@ class Product extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['product_name', 'product_type', 'dosage_form', 'certificate_holder', 'production_country', 'brand_name', 'generic_name', 'nrn', 'mas_code_assigned', 'mas_code_status', 'provider_id'], 'required'],
+            [['product_name', 'product_type', 'dosage_form', 'certificate_holder', 'production_country', 'brand_name', 'generic_name', 'nrn', 'provider_id'], 'required'],
             //[['product_name', 'product_type', 'dosage_form', 'certificate_holder', 'production_country', 'brand_name', 'generic_name', 'nrn'], 'required', 'on' => self::SCENARIO_EXCEL],
-            [['product_type', 'certificate_holder', 'production_country', 'mas_code_assigned', 'mas_code_status', 'provider_id'], 'integer'],
+            [['product_type', 'certificate_holder', 'production_country', 'provider_id'], 'integer'],
             [['deleted', 'created_by', 'modified_by'], 'integer'],
             [['created_date', 'modified_date', 'created_by', 'modified_by'], 'safe'],
             [['product_name', 'dosage_form', 'generic_name'], 'string', 'max' => 100],
@@ -86,8 +84,6 @@ class Product extends \yii\db\ActiveRecord
             'brand_name' => 'Brand Name',
             'generic_name' => 'Generic Name',
             'nrn' => 'NAFDAC Reg. Number',
-            'mas_code_assigned' => 'Mas Code Assigned',
-            'mas_code_status' => 'Mas Code Status',
             'provider_id' => 'MAS Provider',
             'deleted' => 'Deleted',
             'created_date' => 'Created Date',

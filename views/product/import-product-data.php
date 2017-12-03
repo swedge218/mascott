@@ -7,7 +7,11 @@ $this->title = 'Import Products';
 ?>
 
 <div class="row content-header">
-        <h1><?= $this->title; ?></h1>
+        <h1>
+            <?= $this->title; ?>
+            <?= Html::a('<span class="glyphicon glyphicon-chevron-left"></span>Back', 
+                    ['index'], ['class'=>'btn btn-mas pull-right margintop5']) ?>
+        </h1>
 </div>
 
 <?php if(empty($uploadErrors) && empty($excelErrors) && Yii::$app->request->isPost) { ?>
@@ -19,10 +23,6 @@ $this->title = 'Import Products';
                         <i class="glyphicon glyphicon-ok" aria-hidden="true"></i>
                         File data saved successfully
                     </span>
-                    <span class="pull-right">
-                        <?= Html::a('Show Products List', ['product/index'], ['class' => 'btn btn-primary']) ?>
-                    </span>
-                    <p>&nbsp;</p>
                 </div>
             </div>
        </div>
@@ -79,12 +79,15 @@ $this->title = 'Import Products';
 <?php                
         foreach($excelErrors as $rowNumber=>$errors){
 ?>
-                <div class="borderallccc bgeee margintop10 padding5">
+                <div class="borderallccc bgeee margintop10 padding5 paddingleft10">
                     <h6 class="bold">Row: <?= $rowNumber; ?></h6>
 <?php
             foreach($errors as $error){ 
 ?>
-                <p><?= $error; ?></p>
+                <p><?= is_array($error) ? 
+                        str_replace(['[',']', '"'],'',json_encode($error)) : 
+                        $error; ?>
+                </p>
 <?php       
             }
 ?>

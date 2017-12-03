@@ -4,19 +4,24 @@ use app\views\helpers\Alert;
 use yii\helpers\Html;
 ?>
 
+<div class="row content-header">
+        <h1>
+             Import Request Data
+            <?= Html::a('<span class="glyphicon glyphicon-chevron-left"></span>Back', 
+                    ['index'], ['class'=>'btn btn-mas pull-right margintop5']) ?>
+        </h1>
+</div>
+
 <?php if(empty($uploadErrors) && empty($excelErrors) && Yii::$app->request->isPost) { ?>
     <div class="row paddingbottom20">
         <div clas="col-md-12">
             <div class=" no-print">
-                <div class="callout callout-success margintop10 marginbottom10">
+                <div class="callout callout-success margintop10">
                     <span class="">
                         <i class="glyphicon glyphicon-ok" aria-hidden="true"></i>
                         File data saved successfully
                     </span>
-                    <span class="pull-right">
-                        <?= Html::a('Show Reports List', ['usage-report/index'], ['class' => 'btn btn-primary']) ?>
-                    </span>
-                    <p>&nbsp;</p>
+                    
                 </div>
             </div>
        </div>
@@ -72,12 +77,15 @@ use yii\helpers\Html;
 <?php                
         foreach($excelErrors as $rowNumber=>$errors){
 ?>
-                <div class="borderallccc bgeee margintop10 padding5">
+                <div class="borderallccc bgeee margintop10 padding5 paddingleft10">
                     <h6 class="bold">Row: <?= $rowNumber; ?></h6>
 <?php
             foreach($errors as $error){ 
 ?>
-                <p><?= $error; ?></p>
+                <p><?= is_array($error) ? 
+                        str_replace(['[',']', '"'],'',json_encode($error)) : 
+                        $error; ?>
+                </p>
 <?php       
             }
 ?>

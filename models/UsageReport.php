@@ -52,15 +52,15 @@ class UsageReport extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['batch_number', 'phone', 'response', 'location_id', 'date_reported', 'pin_4_digits'], 'required'],
+            [['batch_number', 'phone', 'response', 'date_reported', 'pin_4_digits'], 'required'],
             [['response', 'location_id', 'created_by', 'modified_by'], 'integer'],
-            [['location_id', 'response'], 'integer', 'min' => 1],
+            [['response'], 'integer', 'min' => 1],
             [['date_reported', 'created_date', 'modified_date'], 'safe'],
             [['phone'], 'string', 'max' => 11],
             [['batch_number'], 'string', 'max' => 12],
             [['phone'], 'match', 'pattern' => '/^[0-9]+$/'],
             [['phone'], 'string', 'min' => 11],
-            [['pin_4_digits'], 'string', 'max' => 4],
+            [['pin_4_digits'], 'string', 'max' => 4, 'min' => 4],
             [['location_id'], 'exist', 'skipOnError' => true, 'targetClass' => Location::className(), 'targetAttribute' => ['location_id' => 'id']],
         ];
     }

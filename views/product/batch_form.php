@@ -13,8 +13,8 @@ use yii\web\View;
 /* @var $batch app\models\Batch */
 ?>
 
-    <div class="row batch-form" style="min-height: 200px">       
-        <div class="col-md-2">
+    <div class="row batch-form">       
+        <div class="col-md-3">
             <?= $form->field($batchModel, 'batch_number')->textInput(['maxlength' => true]) ?>
         </div>        
         <div class="col-md-3">
@@ -23,32 +23,72 @@ use yii\web\View;
                 'dateFormat' => 'dd-MM-yyyy',
             ])->textInput(['placeholder' => 'dd-MM-yyyy']) ?>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
             <?= $form->field($batchModel, 'expiry_date')->widget(DatePicker::classname(), [
                 'language' => 'en',
                 'dateFormat' => 'dd-MM-yyyy',
             ])->textInput(['placeholder' => 'dd-MM-yyyy']) ?>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
             <?= $form->field($batchModel, 'quantity')->textInput() ?>
             <?= $form->field($batchModel, 'product_id')->hiddenInput(['value'=>$model->id])->label(false) ?>
             <?= $form->field($batchModel, 'id')->hiddenInput()->label(false) ?>
         </div>
-        <div class="col-md-3" style="margin-top: 25px;">
+    </div>
+
+    
+    <div class="row batch-form">               
+            <div class="col-md-3 col-md-offset-3">
+                <?= $form->field($batchModel, 'mas_code_assigned')->dropDownList(
+                        ['0'=>'-- Select --', '1'=>'No', '2'=>'Yes'], 
+                        array('options' => array($batchModel->mas_code_assigned=>array('selected'=>true)))
+                     ) 
+                ?>
+            </div>
+            <div class="col-md-3">
+                <?= $form->field($batchModel, 'mas_code_status')->dropDownList(
+                        ['0'=>'-- Select --', '1'=>'Not Activated', '2'=>'Activated'],
+                        array('options' => array($batchModel->mas_code_status=>array('selected'=>true)))
+                     ) 
+                ?>
+            </div>
+    </div>
+
+
+    <div class="row batch-form" style="min-height: 200px">       
+        <div class="col-md-3 col-md-offset-4" style="margin-top: 25px;">
             <?= Html::button('Add', ['id'=>'add-batch','class'=>'btn btn-mas']) ?>
             <?= Html::button('Clear', ['id'=>'clear-form','class'=>'btn btn-default marginleft10']) ?>
         </div>
+    
+        <div class="col-md-2" style="margin-top: 25px;">
+             <div class="btn-group">
+                <button type="button" class="btn btn-mas dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   Batches Data File <span class="caret"></span>
+                 </button>
+                 <ul class="dropdown-menu">
+                   <li><?= Html::a('<i class="fa fa-download" aria-hidden="true"></i> '
+                                  . 'Download Sample Template', 
+                                  ['download-batches-sample'], ['class' => '']) ?>
+                   </li>
+                   <li><?= Html::a('<i class="fa fa-download" aria-hidden="true"></i> '
+                                     . 'Upload Batches Data File', 
+                                     ['import-batch-data',  'productId' => $model->id], ['class' => '']) ?>
+                   </li>
+                 </ul>
+            </div>
+         </div>
         
         <div class="col-md-12">
             <div class="row">
-                <div id="loading-div" class="col-md-12 loading-gif-wrapper text-center hidden">
+                <div id="loading-div" class="col-md-12 loading-gif-wrapper text-center margintop20 hidden">
                     <?= Html::img('@web/images/loading.gif', ['alt' => 'Loading Image', 'class'=>'']) ?>
                     <br/>
                     <div class="">Loading...</div>
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
 
 
     <div class="row">
@@ -61,6 +101,8 @@ use yii\web\View;
                         <th class="">Manufacturing Date</th>
                         <th class="">Expiry Date</th>
                         <th class="">Quantity</th>
+                        <th class="">MAS Code Assigned</th>
+                        <th class="">MAS Code Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -71,6 +113,8 @@ use yii\web\View;
                         <th class="">Manufacturing Date</th>
                         <th class="">Expiry Date</th>
                         <th class="">Quantity</th>
+                        <th class="">MAS Code Assigned</th>
+                        <th class="">MAS Code Status</th>
                         <th>Actions</th>
                     </tr>
                 </tfoot>
@@ -87,6 +131,8 @@ use yii\web\View;
                             <td><?php echo date('d-m-Y',  strtotime($batch->manufacturing_date)) ?></td>
                             <td><?php echo date('d-m-Y',  strtotime($batch->expiry_date)) ?></td>
                             <td><?php echo $batch->quantity ?></td>
+                            <td><?php echo $batch->mas_code_assigned == 1 ? 'No' : 'Yes'; ?></td>
+                            <td><?php echo $batch->mas_code_status == 1 ? 'Not Activated' : 'Activated'; ?></td>
                             <td>
                                 <span>
                                     <a id="u<?= $batch->id; ?>" href="" onclick="return updateBatch(<?= $batch->id; ?>)" >
@@ -108,12 +154,18 @@ use yii\web\View;
         </div>
     </div>
 
+
 <?php
     $this->registerJs(
-            "$('#batchList').DataTable();",
+            "$('#batchList').DataTable({
+                'columnDefs': [
+                    {'className': 'text-center', 'targets': [5,6]}
+                  ]
+              });",
         View::POS_READY,
         'batch-list-data-table'
     );
+    
     
     
     $this->registerJsFile(

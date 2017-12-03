@@ -4,6 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\jui\DatePicker;
 use app\views\helpers\Alert;
+use yii\bootstrap\Modal;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Product */
@@ -27,23 +28,6 @@ use app\views\helpers\Alert;
         </div>
         <div class="col-md-4">
             <?= $form->field($model, 'nrn')->textInput(['maxlength' => true]) ?>
-        </div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="col-md-4">
-            <?= $form->field($model, 'mas_code_assigned')->dropDownList(
-                    ['0'=>'-- Select --', '1'=>'No', '2'=>'Yes'], 
-                    array('options' => array($model->mas_code_assigned=>array('selected'=>true)))
-                 ) 
-            ?>
-        </div>
-        <div class="col-md-4">
-            <?= $form->field($model, 'mas_code_status')->dropDownList(
-                    ['0'=>'-- Select --', '1'=>'Not Activated', '2'=>'Activated'],
-                    array('options' => array($model->mas_code_status=>array('selected'=>true)))
-                 ) 
-            ?>
         </div>
     </div>
     <hr>

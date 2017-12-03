@@ -26,7 +26,7 @@ $subtitle = 'Edit Product: ' . $model->product_name;
 
     <?= $this->render('_form', [
         'model' => $model,
-//        'success' => $success,
+        'uploaderModel' => $uploaderModel,
         'hcrMap' => $hcrMap,
         'countryMap' => $countryMap,
         'providerMap' => $providerMap,

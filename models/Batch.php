@@ -12,6 +12,8 @@ use Yii;
  * @property string $manufacturing_date
  * @property string $expiry_date
  * @property string $quantity
+ * @property integer $mas_code_assigned
+ * @property integer $mas_code_status
  * @property integer $product_id
  * @property integer $created_by
  * @property string $created_date
@@ -40,10 +42,10 @@ class Batch extends \yii\db\ActiveRecord
     {
         return [
             //[['batch_number', 'manufacturing_date', 'expiry_date', 'quantity', 'product_id'], 'safe'],
-            [['batch_number', 'manufacturing_date', 'expiry_date', 'quantity', 'product_id'], 'required', 'on' => self::SCENARIO_AJAX],
+            [['batch_number', 'manufacturing_date', 'expiry_date', 'quantity', 'mas_code_assigned', 'mas_code_status' , 'product_id'], 'required', 'on' => self::SCENARIO_AJAX],
             [['manufacturing_date', 'expiry_date'], 'date', 'format'=>'php:Y-m-d'],
             [['created_date', 'modified_date'], 'safe'],
-            [['quantity', 'product_id', 'created_by', 'modified_by'], 'integer'],
+            [['quantity', 'mas_code_assigned', 'mas_code_status', 'product_id', 'created_by', 'modified_by'], 'integer'],
             [['batch_number'], 'string', 'max' => 12],
             [['batch_number'], 'unique', 'message'=>'This batch number already exists'],
             [['quantity'], 'match', 'pattern' => '/^[0-9]+$/'],
@@ -63,6 +65,8 @@ class Batch extends \yii\db\ActiveRecord
             'manufacturing_date' => 'Manufacturing Date',
             'expiry_date' => 'Expiry Date',
             'quantity' => 'Quantity',
+            'mas_code_assigned' => 'MAS Code Assigned', 
+            'mas_code_status' => 'MAS Code Status',
             'product_id' => 'Product ID',
             'created_by' => 'Created By',
             'created_date' => 'Created Date',
@@ -123,13 +127,11 @@ class Batch extends \yii\db\ActiveRecord
      * Check if a matching record can be found.
      * for a product name and type
      */
-    public function hasMatch($pname, $pt_title, $nrn, $batchnum){
+    public function hasMatch($pname, $batchnum){
         $obj = Batch::find()
-                ->innerJoinWith(['product', 'product.productType'])
+                ->innerJoinWith(['product'])
                 ->where([
                     'UPPER(product_name)' => strtoupper($pname) . '',
-                    'UPPER(title)' => strtoupper($pt_title),
-                    'UPPER(nrn)' => strtoupper($nrn),
                     'UPPER(batch_number)' => strtoupper($batchnum)
                 ])->one();        
         
@@ -151,7 +153,7 @@ class Batch extends \yii\db\ActiveRecord
    }
    
    
-   public function isMyBtach($roleTitle, $providerId) {
+   public function isMyBatch($roleTitle, $providerId) {
        $userId = Yii::$app->user->id;
        $user = User::find()->with(['role', 'provider'])->where(['id' => $userId])->one();
        

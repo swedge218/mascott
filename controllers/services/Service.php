@@ -26,7 +26,7 @@ class Service {
     }
     
     public function sendEmail($to, $subject, $params, $viewFile='', $layoutFile=''){
-        //return;
+        return;
         Yii::$app->mailer->htmlLayout = 'layouts/' . $layoutFile;
         Yii::$app->mailer->compose($viewFile, $params)
             //->setFrom($from)

@@ -23,6 +23,7 @@ $subtitle = 'Create New Product';
 
     <?= $this->render('_form', [
         'model' => $model,
+        'uploaderModel' => $uploaderModel,
         'hcrMap' => $hcrMap,
         'countryMap' => $countryMap,
         'providerMap' => $providerMap,

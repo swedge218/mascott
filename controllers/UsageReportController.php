@@ -18,7 +18,7 @@ use app\controllers\services\ProviderService;
 use app\controllers\services\ProductTypeService;
 use app\controllers\services\ProductService;
 use app\controllers\services\AlertsService;
-use app\models\service\ExcelParser;
+use app\models\service\RequestExcelParser;
 use app\models\utils\Trailable;
 use app\models\Permission;
 use app\models\utils\Uploader;
@@ -254,9 +254,8 @@ class UsageReportController extends BaseController
     
     
     public function actionImportUsageData(){
-                
         $model = new Uploader(['scenario' => Uploader::SCENARIO_EXCEL]);
-        $startRow = 19;
+        $startRow = 27; $productRow = 23; $providerRow = 22;
         $uploadErrors = array(); $parseResponse = array(); 
         
         if (Yii::$app->request->isPost) {
@@ -275,7 +274,7 @@ class UsageReportController extends BaseController
                 * Will contain errors if any
                 * Will be empty of no errors.
                 */
-                $parseResponse = (new ExcelParser($startRow, $fileName))->run();
+                $parseResponse = (new RequestExcelParser($startRow, $productRow, $providerRow, $fileName))->run();
                 
                 //Yii::$app->session->setFlash('uploaded', 'UPLOADED');
                 
